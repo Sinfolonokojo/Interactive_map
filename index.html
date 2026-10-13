@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#0F141D">
+<script>
+// Apply the remembered choice before painting. Storage may be unavailable on file://.
+(function(){let saved;try{saved=localStorage.getItem('care-map-theme');}catch(_){}
+ document.documentElement.dataset.theme=['light','dark'].includes(saved)?saved:(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');})();
+</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22%3E%3Crect width=%2240%22 height=%2240%22 rx=%228%22 fill=%22%232D5A4C%22/%3E%3Cpath d=%22M7 24h26l-6 8H13zM20 7v17M19 8L9 21h10%22 fill=%22none%22 stroke=%22%23D4A373%22 stroke-width=%222%22/%3E%3C/svg%3E">
+<title>El cuidado que navega · Navidad y territorio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{--ink:#0F141D;--green:#2D5A4C;--gold:#D4A373;--paper:#F4EFEA;--muted:#a8afa9;--line:rgba(212,163,115,.19)}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);color:var(--paper);font:15px/1.5 Figtree,Arial,sans-serif}button,a,input{font:inherit}button{color:inherit;cursor:pointer}button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--gold);outline-offset:4px}button{touch-action:manipulation}h1,h2,h3,p{margin:0}button:disabled{cursor:default}a{color:var(--gold)}
+.app{display:grid;grid-template-columns:365px minmax(0,1fr);height:100vh;height:100dvh;overflow:hidden}.sidebar{display:flex;flex-direction:column;min-height:0;background:linear-gradient(160deg,#18231f 0%,#10171e 47%,#0f141d 100%);border-right:1px solid var(--line);z-index:1001}.intro{padding:30px 28px 20px}.eyebrow{display:flex;align-items:center;gap:9px;color:var(--gold);font-size:10px;font-weight:600;letter-spacing:2.1px;text-transform:uppercase}.brandmark{width:35px;height:35px;flex:none}h1{font:400 39px/1.07 Fraunces,Georgia,serif;letter-spacing:-1.4px;margin:23px 0 10px}h1 em{color:var(--gold);font-weight:400}.subtitle{font-size:11px;text-transform:uppercase;letter-spacing:2.2px;color:#c8c5b9;margin-bottom:19px}.description{font-size:13px;line-height:1.7;color:#b7beb7;max-width:290px}.overview{display:flex;width:100%;align-items:center;justify-content:space-between;background:transparent;border:1px solid #536353;border-radius:5px;padding:11px 13px;margin-top:20px;font-size:12px}.overview:hover{background:#253b31;border-color:var(--gold)}.overview span{font-size:20px;line-height:1;color:var(--gold)}
+.people{overflow:auto;flex:1;min-height:100px;padding:0 18px 20px;scrollbar-width:thin;scrollbar-color:#495447 transparent}.group{margin-top:17px}.group-title{display:flex;justify-content:space-between;align-items:center;margin:0 10px 8px;font-size:10px;letter-spacing:1.7px;font-weight:600;text-transform:uppercase;color:var(--muted)}.group-title span{font-size:10px;letter-spacing:0;color:var(--gold)}.person{width:100%;display:grid;grid-template-columns:29px 1fr auto;gap:10px;align-items:center;text-align:left;padding:12px 10px;background:none;border:1px solid transparent;border-bottom-color:rgba(244,239,234,.06);border-radius:5px}.person:hover{background:rgba(212,163,115,.055)}.person[aria-pressed=true]{border-color:#8c7352;background:rgba(212,163,115,.10)}.person-number{font-size:10px;color:var(--gold);border:1px solid #66533e;border-radius:50%;width:26px;height:26px;display:grid;place-items:center}.person-name{font-size:14px;font-weight:500;display:block}.person-meta{font-size:10px;color:var(--muted);display:block;margin-top:2px}.distance{font-size:11px;color:var(--gold);text-align:right;white-space:nowrap}.distance small{display:block;font-size:9px;letter-spacing:.5px;color:var(--muted)}.empty-group{font-size:12px;color:var(--muted);padding:4px 10px}.footer{padding:16px 28px 20px;border-top:1px solid var(--line);font-size:10px;color:var(--muted);background:rgba(15,20,29,.7)}.stats{display:flex;gap:30px;margin-bottom:11px}.stat strong{font:400 26px/1.1 Fraunces,Georgia,serif;color:var(--paper);margin-right:5px}.stat span{font-size:10px}.source-state{margin:4px 0;color:#cab394}.status-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold);margin-right:5px}.footer details{margin-top:6px}.footer summary{cursor:pointer}.footer ul{padding-left:15px;max-height:80px;overflow:auto;margin:5px 0}.footer li{margin:3px 0}
+.map-shell{position:relative;min-width:0;isolation:isolate;background:#111a21}#map{width:100%;height:100%;background:#111a21}.map-heading{position:absolute;z-index:500;top:30px;left:34px;pointer-events:none}.map-heading .eyebrow{font-size:9px;color:#c0b7a8;letter-spacing:2.5px}.map-heading h2{font:400 29px/1.25 Fraunces,Georgia,serif;margin-top:5px;text-shadow:0 2px 12px #0f141d}.map-heading p{font-size:11px;color:#a5ada9;margin-top:6px}.map-counter{position:absolute;right:28px;top:30px;z-index:500;text-align:right;color:var(--muted);font-size:10px;letter-spacing:1px}.map-counter b{font:400 30px Fraunces,Georgia,serif;color:var(--gold);display:block}.legend{position:absolute;left:30px;bottom:58px;z-index:500;padding:14px 17px;border:1px solid var(--line);border-radius:5px;background:rgba(15,20,29,.94);font-size:11px;box-shadow:0 6px 25px #0003}.legend-title{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.8px;margin-bottom:9px}.legend-row{display:flex;align-items:center;gap:9px;margin:7px 0}.legend-dot{height:9px;width:9px;background:var(--gold);border-radius:50%}.legend-dot.green{background:var(--green);outline:1px solid var(--gold);outline-offset:2px}.legend-line{width:13px;border-top:1px dashed var(--gold)}.legend-note{max-width:166px;font-size:9px;color:var(--muted);margin-top:9px}.map-caption{position:absolute;z-index:500;right:27px;bottom:57px;text-align:right;pointer-events:none}.map-caption em{font:italic 21px/1.4 Fraunces,Georgia,serif;color:#e1c09c}.map-caption p{font-size:9px;text-transform:uppercase;letter-spacing:1.8px;color:var(--muted);margin-top:6px}.flight-status{position:absolute;z-index:1100;top:105px;left:50%;transform:translateX(-50%);background:#17241f;border:1px solid #716046;border-radius:25px;padding:9px 18px;color:var(--paper);font-size:12px;max-width:80%;box-shadow:0 6px 20px #0005;text-align:center}.flight-status:empty{display:none}.map-error{display:none;position:absolute;z-index:1200;inset:30% 8% auto;padding:25px;background:var(--ink);border:1px solid var(--gold);border-radius:8px}.map-error.visible{display:block}.map-error h2{font:26px Fraunces,Georgia,serif;margin-bottom:10px}.map-error p{font-size:13px;color:var(--muted)}.map-error button{margin-top:15px;background:var(--green);border:1px solid var(--gold);padding:8px 15px;border-radius:4px}
+.osm-dark .leaflet-tile{filter:invert(1) hue-rotate(175deg) saturate(.28) brightness(.72) contrast(.95)}
+.leaflet-container{font-family:Figtree,Arial,sans-serif}.leaflet-control-attribution{background:#101720e8!important;color:#abb1aa!important;font-size:9px!important}.leaflet-control-attribution a{color:#c9aa88!important}.leaflet-control-scale-line{background:#0f141dcc;border-color:#a5a99d;color:#c6c9bf;text-shadow:none;font-size:10px}.leaflet-bottom.leaflet-left{left:20px;bottom:12px}.leaflet-top.leaflet-right{top:105px;right:17px}.leaflet-bar{border:1px solid #4e584d!important;box-shadow:0 3px 18px #0003!important}.leaflet-bar a{background:#17211f!important;color:var(--paper)!important;border-bottom:1px solid #4e584d!important;width:34px!important;height:34px!important;line-height:34px!important}.map-pin{background:none;border:none;display:grid;place-items:center}.pin-core{width:15px;height:15px;background:var(--gold);border:2px solid #f0cc9e;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px #0008;transition:width .3s,height .3s}.map-pin.destination .pin-core{background:var(--green);border:2px solid var(--gold);width:20px;height:20px}.map-pin.principal .pin-core{box-shadow:0 0 0 6px #d4a37316,0 2px 8px #0008}.country-view .map-pin .pin-core{width:9px;height:9px;border-width:1px}.country-view .map-pin.destination .pin-core{width:13px;height:13px}.city-label.leaflet-tooltip{background:#14211ce8;color:var(--paper);border:1px solid #5f6350;box-shadow:none;font-size:11px;padding:4px 8px}.city-label.leaflet-tooltip:before{display:none}.country-view .origin-label{display:none}.ref-label.leaflet-tooltip{background:none;border:none;color:#a8b1aa;font-size:10px;box-shadow:none;padding:1px 4px;text-shadow:0 1px 3px #000}.ref-label.leaflet-tooltip:before{display:none}.leaflet-popup-content-wrapper{background:#17211f;color:var(--paper);border:1px solid var(--gold);border-radius:8px;box-shadow:0 12px 40px #0008}.leaflet-popup-tip{background:var(--gold)}.leaflet-popup-content{margin:21px 21px 18px;font-size:12px;line-height:1.6}.leaflet-popup-close-button{color:var(--gold)!important;font-size:23px!important;right:5px!important;top:5px!important}.leaflet-popup-scrolled{border:none!important;scrollbar-width:thin;scrollbar-color:#62725c transparent}.leaflet-popup-content .story p{margin:0}.map-shell:has(.leaflet-popup) .legend,.map-shell:has(.leaflet-popup) .map-caption{display:none}
+.story h2{font:400 28px/1.2 Fraunces,Georgia,serif;padding-right:10px}.story .kicker{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.story-meta{font-size:11px;color:#bec5b9;margin-top:7px}.distance-tag{display:inline-block;font-size:10px;color:#ecd2b1;border:1px solid #71634e;padding:3px 9px;border-radius:20px;margin:10px 0}.tabs{display:flex;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:2px 0 12px;margin-bottom:12px}.tabs button{border:1px solid #546052;border-radius:4px;background:transparent;padding:4px 8px;font-size:10px}.tabs button[aria-selected=true]{background:var(--gold);color:var(--ink);border-color:var(--gold)}.story-field{margin-top:13px}.story-field h3{font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:#d1b58e;margin-bottom:5px}.story-field p{white-space:pre-wrap;overflow-wrap:anywhere}.empty-value{font-style:italic;color:#87968b}.tags{display:flex;gap:5px;flex-wrap:wrap}.tag{display:inline-block;background:#2d5a4c47;border:1px solid #52715c66;border-radius:4px;padding:3px 7px;font-size:10px}.quote{border-left:2px solid var(--gold);padding-left:11px;color:#e1dccf}.original{font-size:10px;color:#99a99c;border-top:1px solid var(--line);padding-top:9px;margin-top:15px}.story-dialog{position:fixed;z-index:2000;inset:10% auto auto 50%;transform:translateX(-50%);width:min(400px,92vw);max-height:80vh;overflow:auto;background:#17211f;border:1px solid var(--gold);border-radius:8px;padding:25px}.story-dialog>button{float:right;background:none;border:0;color:var(--gold);font-size:23px}.story-dialog[hidden]{display:none}
+@media(min-width:1500px){.app{grid-template-columns:405px 1fr}.intro{padding:40px 35px 24px}.footer{padding:20px 35px}.people{padding-left:25px;padding-right:25px}h1{font-size:45px}}
+@media(max-height:770px) and (min-width:761px){.intro{padding-top:20px;padding-bottom:12px}h1{font-size:34px;margin-top:14px}.description{font-size:12px}.subtitle{margin-bottom:12px}.overview{margin-top:12px}.footer{padding-top:10px;padding-bottom:12px}.stats{margin-bottom:6px}}
+@media(max-width:760px){.app{display:flex;flex-direction:column;height:auto;overflow:visible}.sidebar{border-right:0}.intro{padding:24px 23px 17px}h1{font-size:37px;margin-top:15px}.description{max-width:100%;font-size:13px}.subtitle{margin-bottom:12px}.overview{margin-top:15px}.people{max-height:260px;flex:none;padding-bottom:16px}.footer{padding:15px 23px}.map-shell{height:100svh;min-height:650px;order:0}.map-heading{top:22px;left:20px}.map-heading h2{font-size:24px}.map-heading p{max-width:210px;font-size:10px}.map-counter{right:20px;top:20px}.legend{bottom:51px;left:15px;padding:10px 12px;font-size:10px}.legend-note{max-width:150px}.map-caption{display:none}.leaflet-top.leaflet-right{right:10px;top:96px}.leaflet-popup-content{margin:19px 17px 16px}.flight-status{top:113px;font-size:11px;width:max-content}.map-shell:has(.leaflet-popup) .legend{display:none}.map-shell:has(.leaflet-popup) .map-heading,.map-shell:has(.leaflet-popup) .map-counter,.map-shell:has(.leaflet-popup) .leaflet-control-zoom{display:none}}
+
+/* Theme tokens also style Leaflet overlays; survey data never changes with theme. */
+:root{color-scheme:dark;--surface:#17211f;--surface-soft:#18231f;--overlay:#0f141df2;--secondary:#b7beb7;--border:#536353;--tag-bg:#2d5a4c47;--shadow:#0005;--map-bg:#111a21}
+:root[data-theme="light"]{color-scheme:light;--ink:#F6F2EA;--paper:#233C33;--gold:#91602F;--muted:#5B6B61;--line:#91602F30;--surface:#FFFCF6;--surface-soft:#E8EEE5;--overlay:#FFFCF6F2;--secondary:#536759;--border:#9DAF9D;--tag-bg:#2D5A4C0E;--shadow:#233C331F;--map-bg:#E7ECE5}
+.sidebar{background:linear-gradient(160deg,var(--surface-soft),var(--ink) 65%)}
+.intro-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.intro-top .eyebrow{font-size:9px;letter-spacing:1.4px;gap:7px}.brandmark{width:29px;height:29px}
+.theme-switch{display:flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:25px;background:var(--ink);flex:none}
+.theme-switch button{display:grid;place-items:center;border:0;border-radius:50%;background:none;color:var(--muted);width:34px;height:34px}.theme-switch button[aria-pressed="true"]{background:var(--green);color:#F4EFEA}.theme-switch button:hover{box-shadow:inset 0 0 0 1px var(--gold)}.theme-switch svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.subtitle,.description,.map-heading p,.map-heading .eyebrow,.story-meta,.original,.nostalgia-detail{color:var(--secondary)}.overview{border-color:var(--border)}.overview:hover{background:var(--tag-bg)}.person{border-bottom-color:var(--line)}.person-number{border-color:var(--line)}.person[aria-pressed=true]{border-color:var(--gold);background:var(--tag-bg)}.person:hover{background:var(--tag-bg)}.person>span:nth-child(2){min-width:0}.person-name,.person-meta{overflow-wrap:anywhere}.footer{background:var(--ink)}.source-state,.map-caption em,.story-field h3,.distance-tag{color:var(--gold)}.stats{flex-wrap:wrap;gap:10px 24px}.footer{max-height:32vh;overflow:auto;flex-shrink:0}.intro{flex-shrink:0}
+.map-shell,#map{background:var(--map-bg)}.map-heading{max-width:calc(100% - 145px)}.map-heading h2{text-shadow:0 2px 14px var(--ink)}.legend,.flight-status{background:var(--overlay);box-shadow:0 6px 25px var(--shadow)}.flight-status{border-color:var(--gold)}.map-caption em{text-shadow:0 1px 6px var(--ink)}
+.leaflet-popup-content-wrapper,.story-dialog{background:var(--surface);box-shadow:0 12px 40px var(--shadow)}.leaflet-popup-content{font-size:13px}.story-field h3{font-size:10px}.story .story-meta{margin-top:7px}.story .original{margin-top:15px}.empty-value{color:var(--muted)}.quote{color:var(--paper)}.tag{background:var(--tag-bg);border-color:var(--line);font-size:11px}.tabs button{border-color:var(--border);min-height:36px}.tabs button[aria-selected=true]{color:var(--ink)}.distance-tag{border-color:var(--line)}.city-label.leaflet-tooltip{background:var(--overlay);border-color:var(--border)}.ref-label.leaflet-tooltip{color:var(--secondary);text-shadow:0 1px 3px var(--ink)}
+.leaflet-control-attribution{background:var(--overlay)!important;color:var(--muted)!important}.leaflet-control-attribution a{color:var(--gold)!important}.leaflet-control-scale-line{background:var(--overlay);border-color:var(--muted);color:var(--paper)}.leaflet-bar{border-color:var(--border)!important}.leaflet-bar a{background:var(--surface)!important;border-bottom-color:var(--border)!important;width:40px!important;height:40px!important;line-height:40px!important}.leaflet-popup-close-button{width:36px!important;height:36px!important;line-height:36px!important}.map-error button{color:#F4EFEA}
+[data-theme="light"] .osm-dark .leaflet-tile{filter:saturate(.38) brightness(1.02)}
+[data-theme="light"] .pin-core{background:#BD8750;border-color:#FFF5E4}
+[data-theme="light"] .map-pin.destination .pin-core{background:var(--green);border-color:#BD8750}
+.mobile-nav{display:none}.map-shell{scroll-margin-top:56px}.people{scroll-margin-top:65px}
+@media(min-width:761px) and (max-width:1100px){.app{grid-template-columns:310px minmax(0,1fr)}.intro{padding:22px 20px 15px}.intro-top .eyebrow{max-width:145px}.intro-top .brandmark{width:25px}.intro-top .theme-switch button{width:30px;height:30px}h1{font-size:35px}.people{padding-left:10px;padding-right:10px}.footer{padding:14px 20px}.map-heading{left:22px;max-width:calc(100% - 110px)}.map-heading h2{font-size:23px}.map-counter{right:18px}.map-caption{display:none}.legend{left:20px}}
+@media(max-width:760px){
+ .app{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto auto auto;height:auto;overflow:visible}
+ .sidebar{display:contents}.intro{grid-row:1;background:linear-gradient(140deg,var(--surface-soft),var(--ink));padding:18px 20px 16px}.intro-top .eyebrow{max-width:none}.intro-top .theme-switch button{width:38px;height:38px}
+ h1{font-size:clamp(29px,6.8vw,40px);letter-spacing:-1px;margin:12px 0 7px}h1 br{display:none}h1 br:after{content:' '}.subtitle{font-size:10px;margin-bottom:8px}.description{font-size:12px;max-width:570px;line-height:1.55}.overview{display:none}
+ .mobile-nav{display:flex;grid-row:2;position:sticky;top:0;z-index:1200;gap:8px;padding:8px 16px;background:var(--ink);border-block:1px solid var(--line);box-shadow:0 4px 12px var(--shadow)}.mobile-nav button{flex:1;min-height:44px;border:1px solid var(--border);border-radius:6px;background:var(--surface);font-size:12px;font-weight:600}.mobile-nav button:first-child{background:var(--green);color:#F4EFEA;border-color:var(--green)}.mobile-nav button span{margin-left:6px;font-size:11px;opacity:.8}
+ .map-shell{grid-row:3;height:calc(100svh - 61px);min-height:420px;order:initial}.map-heading{top:21px;left:18px;max-width:calc(100% - 95px)}.map-heading h2{font-size:clamp(20px,5vw,25px)}.map-heading .eyebrow{font-size:8px;letter-spacing:1.4px}.map-heading p{max-width:230px;font-size:11px}.map-counter{right:18px;top:22px}.map-counter b{font-size:25px}.map-counter{font-size:8px}.leaflet-top.leaflet-right{top:120px;right:8px}.legend{bottom:48px;left:15px}.legend-note{max-width:150px}.legend-row{margin:5px 0}.legend-title{font-size:8px}.map-shell:has(.leaflet-popup) .map-heading,.map-shell:has(.leaflet-popup) .map-counter{display:none}.flight-status{top:116px;max-width:calc(100% - 30px)}
+ .people{grid-row:4;max-height:none;overflow:visible;min-height:0;padding:10px 16px 24px;background:var(--ink)}.group{margin-top:23px}.group-title{font-size:11px;letter-spacing:1.3px;margin-bottom:10px}.person{min-height:68px;padding:12px 10px}.person-name{font-size:16px}.person-meta{font-size:12px}.distance{font-size:12px}.distance small{font-size:10px}.person-number{width:29px;height:29px;font-size:11px}.footer{grid-row:5;max-height:none;overflow:visible;padding:20px 26px calc(24px + env(safe-area-inset-bottom));font-size:12px}.footer summary{padding:8px 0;min-height:38px}.stats{gap:22px}.stat span{font-size:12px}.footer ul{max-height:none}
+ .leaflet-popup-content{font-size:13px;margin:19px 17px 16px}.tabs button{min-height:44px;font-size:11px}.story h2{font-size:27px}.story-field h3{font-size:10px}.story-meta{font-size:12px}.story-dialog{inset:70px auto auto 50%;max-height:calc(100dvh - 90px)}
+}
+@media(min-width:500px) and (max-width:760px){.people{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}.group:first-child{grid-column:1/-1}.group:first-child{display:grid;grid-template-columns:1fr 1fr;gap:0 15px}.group:first-child .group-title{grid-column:1/-1}.person{grid-template-columns:29px minmax(0,1fr) auto;gap:7px}}
+@media(max-width:360px){.intro{padding-inline:15px}.intro-top .eyebrow{font-size:8px;letter-spacing:1px;max-width:172px}.description{font-size:11px}.people{padding-inline:8px}.person{gap:7px}.person-meta{font-size:11px}.map-heading h2{font-size:19px}}
+@media(min-width:761px) and (max-height:650px){.sidebar{overflow:auto}.intro{padding-top:14px}.intro h1{font-size:29px;margin-top:10px}.description{display:none}.people{flex:1 0 220px}.footer{max-height:none;overflow:visible}.subtitle{margin-bottom:9px}.map-heading{top:20px}.map-heading h2{font-size:22px}}
+
+
+/* A non-modal reader leaves the map usable while keeping long answers comfortable. */
+.story-reader[hidden]{display:none}.story-reader{position:fixed;z-index:2000;right:22px;top:22px;bottom:22px;width:420px;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--gold);border-radius:12px;box-shadow:0 16px 60px var(--shadow);color:var(--paper)}
+.reader-toolbar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);flex:none}.reader-progress{font-size:12px;letter-spacing:.5px;color:var(--muted);flex:1}.reader-close,.reader-expand{background:transparent;border:1px solid var(--line);border-radius:6px;min-height:44px;padding:8px 12px;font-size:12px}.reader-close{width:44px;font-size:25px;padding:0}.reader-expand{display:none}.reader-scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:24px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}.reader-scroll:focus-visible{outline-offset:-3px}.story-reader .story h2{font-size:32px;padding:0}.story-reader .story-meta{font-size:13px;line-height:1.6;margin-top:9px}.story-reader .story-field{margin-top:24px}.story-reader .story-field h3{font-size:11px;line-height:1.5;letter-spacing:1px;margin-bottom:8px}.story-reader .story-field p{font-size:15px;line-height:1.7}.story-reader .tag{font-size:12px;padding:5px 8px}.story-reader .original{font-size:12px;line-height:1.6;margin-top:24px}.story-reader .empty-value{color:var(--muted)}.story-reader .distance-tag{font-size:12px;margin:12px 0 17px}.story-reader .tabs{gap:6px}.story-reader .tabs button{min-height:44px;font-size:12px}.story-reader .kicker{font-size:10px}.route-summary{padding:12px 14px;background:var(--tag-bg);border:1px solid var(--line);border-radius:7px;font-size:14px;line-height:1.6;margin:6px 0 18px;overflow-wrap:anywhere}.route-summary small{display:block;font-size:12px;color:var(--muted)}
+.reader-navigation{display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid var(--line);flex:none}.reader-navigation button{flex:1;min-height:46px;border:1px solid var(--border);border-radius:6px;background:var(--surface);font-size:13px;font-weight:600}.reader-navigation button:last-child{background:var(--green);border-color:var(--green);color:#F4EFEA}.reader-navigation button:disabled{opacity:.4}.reader-navigation button:not(:disabled):hover,.reader-toolbar button:hover{outline:1px solid var(--gold)}
+.map-views{position:absolute;z-index:600;top:128px;left:30px;display:flex;gap:4px;padding:4px;background:var(--overlay);border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 16px var(--shadow)}.map-views button{border:0;border-radius:5px;background:none;color:var(--paper);min-height:40px;padding:8px 12px;font-size:12px}.map-views button[aria-pressed=true]{background:var(--green);color:#F4EFEA}.map-shell.reader-open .map-heading,.map-shell.reader-open .map-counter,.map-shell.reader-open .legend,.map-shell.reader-open .map-caption{display:none}.map-shell.reader-open .map-views{top:20px}.map-shell.reader-open .flight-status{top:80px}.flight-status{top:190px}
+.map-pin.pin-muted{opacity:.45}.map-pin.pin-selected .pin-core{box-shadow:0 0 0 5px var(--ink),0 0 0 7px var(--gold),0 5px 14px #0006}.country-view .map-pin.pin-selected .pin-core{width:16px;height:16px}.map-pin.pin-selected{z-index:1000!important}.person-meta{font-size:11px}.distance small{font-size:10px}.group-title{font-size:11px}.empty-value{color:var(--muted)}
+@media(max-width:1100px){.story-reader{top:auto;bottom:0;right:0;width:100%;height:54dvh;max-height:calc(100dvh - 66px);border-radius:18px 18px 0 0}.story-reader.expanded{height:86dvh}.reader-toolbar{padding:8px 14px}.reader-expand{display:block}.reader-scroll{padding:20px 24px}.reader-navigation{padding:10px 16px calc(10px + env(safe-area-inset-bottom))}.story-reader .story h2{font-size:28px}.reader-progress{font-size:11px}.map-views{top:136px;left:18px}.map-views button{font-size:11px;padding:7px 10px}.leaflet-top.leaflet-right{top:193px}.map-shell.reader-open .leaflet-control-zoom{display:none}}
+@media(max-width:760px){.story-reader .story-field p{font-size:15px}.reader-scroll{padding:18px 20px}.reader-toolbar{gap:6px}.reader-close{width:40px}.reader-expand{padding-inline:9px}.map-views{left:15px;max-width:calc(100% - 30px)}.map-views button{min-height:44px}.map-shell.reader-open .map-views{top:14px}.story-reader .story-meta{font-size:12px}.reader-navigation button{min-height:44px}.flight-status{top:200px}}
+@media(max-height:500px) and (max-width:1100px){.story-reader{height:76dvh}.story-reader.expanded{height:calc(100dvh - 16px);max-height:calc(100dvh - 16px)}.reader-scroll{padding:15px 20px}.reader-toolbar{padding-block:4px}.reader-navigation{padding-block:6px}}
+
+.local-file-notice{position:absolute;z-index:700;left:20px;right:20px;top:200px;margin:auto;max-width:440px;background:var(--surface);border:1px solid var(--gold);border-radius:9px;padding:17px;color:var(--paper);font-size:13px;box-shadow:0 5px 20px var(--shadow)}.local-file-notice p{margin-top:8px}.local-file-notice[hidden],.reader-open .local-file-notice{display:none}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="mobile-nav" aria-label="Navegación móvil">
+<button id="mobile-map" type="button">Ver mapa <span aria-hidden="true">↗</span></button>
+<button id="mobile-stories" type="button">Historias <span id="mobile-count">12</span> <span aria-hidden="true">↓</span></button>
+</nav>
+<aside class="sidebar" aria-label="Historias de la encuesta">
+<header class="intro">
+<div class="intro-top"><div class="eyebrow"><svg class="brandmark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4 25c8 5 24 5 32 0L30 32H10L4 25Z" stroke="currentColor"/><path d="M20 6v19M20 7c-7 5-9 10-10 14h10M22 10c5 4 7 7 8 11h-8M3 36c4-3 6 3 10 0s6 3 10 0 6 3 14 0" stroke="currentColor" stroke-linecap="round"/></svg><span>Memorias que nos unen</span></div>
+<div class="theme-switch" role="group" aria-label="Tema de color">
+<button type="button" data-theme-choice="light" aria-label="Tema claro" title="Tema claro" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button>
+<button type="button" data-theme-choice="dark" aria-label="Tema oscuro" title="Tema oscuro" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 0 1 8.8 4 8.5 8.5 0 1 0 20 15.2Z"/></svg></button>
+</div></div>
+<h1>El cuidado<br> que <em>navega.</em></h1>
+<p class="subtitle">Navidad y territorio</p>
+<p class="description">Las distancias cambian. Las raíces permanecen. Un mapa de los lugares, las tradiciones y los afectos que llevamos con nosotros.</p>
+<button class="overview" id="overview">Ver todo el mapa <span aria-hidden="true">↗</span></button>
+</header>
+<nav class="people" id="people" aria-label="Elegir una persona"></nav>
+<footer class="footer">
+<div class="stats"><div class="stat"><strong id="total">—</strong><span>respuestas</span></div><div class="stat"><strong id="palmira-total">—</strong><span>viven en Palmira</span></div></div>
+<p>Fuente: encuesta «El cuidado que navega».</p>
+<p class="source-state" id="source-state" role="status"></p>
+<details id="unlocated"><summary id="unlocated-summary">Sin ubicar</summary><ul id="unlocated-list"></ul></details>
+<details><summary>Acerca de este mapa</summary><p>Respuestas con consentimiento. Distancias en línea recta entre centros urbanos, no recorridos reales. Los relatos conservan su redacción original.</p><p id="boundary-state">Contorno aproximado de respaldo.</p><p><span id="basemap-state">Base: OpenStreetMap con filtro oscuro (sin clave).</span> Frontera: <a href="https://github.com/johan/world.geo.json/blob/master/countries/COL.geo.json" target="_blank" rel="noopener noreferrer">World GeoJSON</a>.</p></details>
+</footer>
+</aside>
+<main class="map-shell" id="map-shell" aria-label="Mapa de Colombia y las historias de sus habitantes">
+<div id="map" aria-label="Mapa interactivo; también puedes navegar desde la lista"></div>
+<div class="map-heading"><div class="eyebrow">Atlas de los afectos / 01</div><h2>Un territorio que llevamos dentro</h2><p>Elige una historia y acompaña su recorrido.</p></div>
+<div class="map-counter"><b id="place-total">—</b> LUGARES</div>
+<div class="map-views" role="group" aria-label="Encuadre del mapa"><button id="view-country" type="button" aria-pressed="true">Toda Colombia</button><button id="view-survey" type="button" aria-pressed="false">Lugares de la encuesta</button></div>
+<div id="flight-status" class="flight-status" role="status" aria-live="polite"></div>
+<div class="legend"><p class="legend-title">Cada punto, una historia</p><div class="legend-row"><i class="legend-dot"></i> Lugar de origen</div><div class="legend-row"><i class="legend-dot green"></i> Donde vive hoy</div><div class="legend-row"><i class="legend-line"></i> Vínculo con el territorio</div><p class="legend-note">Las líneas unen afectos; no representan el trayecto del viaje.</p></div>
+<div class="map-caption"><em>«La tierra también<br>viaja con nosotros.»</em><p>Raíces · Memoria · Comunidad</p></div>
+<aside class="local-file-notice" id="local-file-notice" hidden role="status"><strong>Abre el mapa con un servidor local</strong><p>En Windows, cierra esta pestaña y abre <b>INICIAR-MAPA.bat</b> desde la carpeta extraída. Abrirá el navegador con la dirección correcta.</p><p>Al abrir el HTML directamente solo se muestran el contorno y las historias.</p></aside>
+<div class="map-error" id="map-error"><h2>El mapa necesita conexión</h2><p>No fue posible cargar Leaflet. Las respuestas siguen disponibles en el panel. Conéctate para cargar el mapa base.</p><button onclick="location.reload()">Volver a intentar</button></div>
+</main>
+</div>
+<section id="story-dialog" class="story-reader" role="dialog" aria-labelledby="story-title" tabindex="-1" hidden>
+<header class="reader-toolbar"><button id="reader-expand" class="reader-expand" type="button" aria-expanded="false" aria-controls="reader-scroll">Ampliar lectura ↑</button><p id="reader-progress" class="reader-progress" role="status" aria-live="polite"></p><button class="reader-close" type="button" aria-label="Cerrar historia" data-close-dialog>×</button></header>
+<div id="reader-scroll" class="reader-scroll" tabindex="0" aria-label="Respuestas de la persona"><div id="reader-content"></div></div>
+<nav class="reader-navigation" aria-label="Recorrer historias"><button id="story-prev" type="button">← Anterior</button><button id="story-next" type="button">Siguiente →</button></nav>
+</section>
+<noscript>Activa JavaScript para explorar las respuestas y el mapa.</noscript>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+'use strict';
+/* CONFIGURACIÓN
+   Archivo autónomo: los únicos recursos de código externos son Leaflet y las fuentes.
+   Google Sheets: consulta los encabezados y después SOLO las columnas permitidas.
+   Las columnas se reconocen por pregunta, aunque cambie su posición en la hoja.
+   La hoja compartida es pública: usa una copia sin correos, teléfonos ni contactos.
+   Filtrar columnas en el mapa no restringe el acceso directo a la hoja original.
+   CSV_URL permite usar alternativamente un CSV publicado y previamente depurado.
+*/
+const CSV_URL = '';
+const SHEET_ID = '1dEPWo67stK4qTJL7747GTolYOjBhnAIgIbMcvqVTrFk';
+const SHEET_NAME = 'Respuestas de formulario 1';
+const WEB_ORIGIN = ['http:','https:'].includes(location.protocol);
+// Desde septiembre de 2026 CARTO exige clave. Sin ella se usa OSM oscurecido.
+// Si tienes una clave propia, activa exactamente CARTO Dark Matter (dark_all).
+const CARTO_API_KEY = '';
+const REFRESH_MS = 60000;
+const DESTINO_PRINCIPAL = 'palmira';
+const GEOJSON_URL = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries/COL.geo.json';
+// Correcciones verificadas por marca temporal EXACTA. Nunca inferir un origen ausente.
+// Ejemplo de estructura: 'dd/mm/aaaa hh:mm:ss': { origen: 'Guapi', actual: 'Palmira' }
+const AJUSTES = {};
+const CIUDADES = {
+ 'palmira':[3.5394,-76.3036], 'popayan':[2.4448,-76.6147], 'guapi':[2.5708,-77.8854],
+ 'miranda':[3.2499,-76.2281], 'tuquerres':[1.0865,-77.6186], 'el bordo':[2.1156,-76.9896],
+ 'guayaquil':[-2.1894,-79.8891], 'cali':[3.4516,-76.5320], 'bogota':[4.7110,-74.0721],
+ 'medellin':[6.2442,-75.5812], 'cartagena':[10.3910,-75.4794], 'pasto':[1.2136,-77.2811],
+ 'leticia':[-4.2153,-69.9406], 'santander de quilichao':[3.0094,-76.4849],
+ 'puerto tejada':[3.2300,-76.4170], 'timbiqui':[2.7717,-77.6654], 'lopez de micay':[2.8467,-77.2475],
+ 'buenaventura':[3.8801,-77.0312], 'piendamo':[2.6392,-76.5306], 'patia':[2.0684,-77.0527],
+ 'silvia':[2.6110,-76.3780], 'corinto':[3.1743,-76.2599], 'toribio':[2.9548,-76.2684],
+ 'tulua':[4.0847,-76.1954], 'buga':[3.9009,-76.2978], 'florida':[3.3223,-76.2348],
+ 'pradera':[3.4211,-76.2447], 'jamundi':[3.2608,-76.5394], 'yumbo':[3.5823,-76.4915],
+ 'pereira':[4.8143,-75.6946], 'manizales':[5.0703,-75.5138], 'armenia':[4.5339,-75.6811],
+ 'barranquilla':[10.9685,-74.7813], 'bucaramanga':[7.1193,-73.1227], 'quito':[-0.1807,-78.4678],
+ 'san andres':[12.5847,-81.7006], 'providencia':[13.35,-81.3747]
+};
+const NOMBRES = {'popayan':'Popayán','tuquerres':'Túquerres','bogota':'Bogotá','medellin':'Medellín','el bordo':'El Bordo','piendamo':'Piendamó','timbiqui':'Timbiquí','lopez de micay':'López de Micay','patia':'Patía','toribio':'Toribío','tulua':'Tuluá','jamundi':'Jamundí','san andres':'San Andrés'};
+const PREGUNTAS = {
+ marca:['marca temporal'], consentimiento:['aceptas participar en esta encuesta'],
+ origen:['de que municipio o region del cauca'], actual:['en que ciudad vives'],
+ motivo:['que motivo o que busqueda hizo que un dia tuvieras que dejar tu tierra'],
+ nostalgia:['en que fecha o momento del ano sientes mas la nostalgia por tu territorio'],
+ navidad:['si respondiste diciembre en que momento de la navidad extranas mas a tu gente y a tu tierra'],
+ tradiciones:['que tradiciones de tu territorio conservas en tus fechas especiales'],
+ empaque:['que te parecen las dimensiones del empaque'],
+ elementos:['que elementos del kit te llaman mas la atencion'],
+ segundo:['una vez consumidos todos los productos del kit utilizarias el empaque para darle un segundo uso en tu hogar'],
+ comentario:['quieres dejarnos algun comentario final']
+};
+const RESPALDO_CSV = "Marca temporal,¿Aceptas participar en esta encuesta?,¿De qué municipio o región del Cauca?,¿En qué ciudad vives?,  ¿Qué motivo o qué búsqueda hizo que un día tuvieras que dejar tu tierra?  ,¿En qué fecha o momento del año sientes más la nostalgia por tu territorio?,\"  Si respondiste diciembre: ¿en qué momento de la Navidad extrañas más a tu gente y a tu tierra? (Si elegiste otro mes, saltemos a la siguiente pregunta)\",¿Qué tradiciones de tu territorio conservas en tus fechas especiales?,  ¿Qué te parecen las dimensiones del empaque (17cm X 28 cm)?  ,¿Qué elementos del kit te llaman más la atención? (elige máximo 5),\"  Una vez consumidos todos los productos del kit, ¿utilizarías el empaque para darle un segundo uso en tu hogar?  \",¿Quieres dejarnos algún comentario final? (opcional)\r\n10/10/2026 19:17:44,\"Sí, acepto\",palmira,palmira,,\"No hay una fecha en particular, la siento en cualquier momento\",31 de diciembre (fin de año),\"Comidas típicas, Velas, faroles o luces, Ninguna\",,\"Relajante Mágico, QR con arrullos, Cartas \"\"Empiezo yo\"\", Papel para el testamento, Crema para dolores\",,💥🫥🫎\r\n11/10/2026 11:54:17,\"Sí, acepto\",Popayán ,Palmira valle ,Falta de oportunidades laborales ,\"No hay una fecha en particular, la siento en cualquier momento\",Todo diciembre por igual,\"Comidas típicas, Velas, faroles o luces, Novenas o rezos\",,\"Faroles de coco, Relajante Mágico, Crema para dolores\",Como organizador para objetos personales sobre una mesa o peinadora.,Muy interesante la propuesta ojalá lleguen a muchas partes y den ha conocer la riqueza de nuestros territorios \r\n11/10/2026 23:30:00,\"Sí, acepto\",Guapi ,Palmira ,Universidad ,Navidad y fin de año,7 de diciembre (velitas y balsadas),\"Comidas típicas, Reuniones familiares grandes\",Ideal,\"QR con arrullos, Crema para dolores\",Como organizador para objetos personales sobre una mesa o peinadora.,\r\n12/10/2026 14:30:22,\"Sí, acepto\",Miranda,Palmira,,Fiestas patronales o fiestas del pueblo,7 de diciembre (velitas y balsadas),\"Comidas típicas, Velas, faroles o luces, Reuniones familiares grandes\",Ideal,\"Faroles de coco, Relajante Mágico, Cartas \"\"Empiezo yo\"\"\",Como organizador para objetos personales sobre una mesa o peinadora.,\r\n12/10/2026 14:38:04,\"Sí, acepto\",Popayán ,Palmira ,Según mi familia por desplazamiento ,Navidad y fin de año,31 de diciembre (fin de año),\"Comidas típicas, Velas, faroles o luces\",Un poco grande,\"Faroles de coco, Cartas \"\"Empiezo yo\"\", Crema para dolores, Los envases\",Como organizador para objetos personales sobre una mesa o peinadora.,\"Muy interesante el empaque su diseño trasmite las balsadas que tanto habla mi familia, puedo hacerme la idea de todo lo que ellos me cuentan \"\r\n12/10/2026 16:08:29,\"Sí, acepto\",,Guayaquil ,Mejorar económicamente ,Navidad y fin de año,31 de diciembre (fin de año),\"Comidas típicas, Velas, faroles o luces, Reuniones familiares grandes\",Ideal,\"Faroles de coco, Viche en jícaras, Relajante Mágico, Crema para dolores\",\"Como baúl o caja para conservar recetas, historias o recuerdos especiales.\",Pueden colocar mas dulces \r\n12/10/2026 16:27:33,\"Sí, acepto\",Palmira origen Venezuela ,Palmira,,Navidad y fin de año,31 de diciembre (fin de año),\"Comidas típicas, Reuniones familiares grandes, Escribir cartas o versos\",Ideal,\"Faroles de coco, Cartas \"\"Empiezo yo\"\", El empaque en sí\",Para guardar las cartas de la dinámica y volver a jugar en reuniones familiares.,\r\n12/10/2026 17:36:00,\"Sí, acepto\",,Palmira,Oportunidades de trabajo,Navidad y fin de año,31 de diciembre (fin de año),\"Comidas típicas, Novenas o rezos\",Un poco grande,\"Relajante Mágico, Cartas \"\"Empiezo yo\"\", Crema para dolores, El empaque en sí\",Como organizador para objetos personales sobre una mesa o peinadora.,\r\n12/10/2026 17:38:46,\"Sí, acepto\",Tuquerres Nariño ,Palmira Valle Del Cauca ,,Fiestas patronales o fiestas del pueblo,.,Comidas típicas,Ideal,Faroles de coco,\"Como baúl o caja para conservar recetas, historias o recuerdos especiales.\",.\r\n12/10/2026 17:56:31,\"Sí, acepto\",,Palmira,Buscar oportunidades de estudio,Navidad y fin de año,7 de diciembre (velitas y balsadas),\"Cantos o arrullos, Velas, faroles o luces, Salir a ver alumbrados \",Ideal,\"Viche en jícaras, QR con arrullos, Cartas \"\"Empiezo yo\"\", El empaque en sí\",Para guardar las cartas de la dinámica y volver a jugar en reuniones familiares.,\r\n12/10/2026 18:07:24,\"Sí, acepto\",El bordo Cauca ,Palmira valle del Cauca ,Estudios ,Navidad y fin de año,24 de diciembre (Nochebuena),Ninguna,Ideal,\"Faroles de coco, Crema para dolores, El empaque en sí\",\"Como baúl o caja para conservar recetas, historias o recuerdos especiales.\",Se ve muy interesante la propuesta \r\n12/10/2026 18:24:11,\"Sí, acepto\",,Cali ,,Fechas como los cumpleaños de mis familiares ,31 de diciembre (fin de año),\"Comidas típicas, Velas, faroles o luces, Reuniones familiares grandes, Novenas o rezos\",Ideal,\"Faroles de coco, Viche en jícaras, Cartas \"\"Empiezo yo\"\", Crema para dolores, El empaque en sí\",\"Como baúl o caja para conservar recetas, historias o recuerdos especiales.\",Muy buena propuesta. \r\n";
+const CONTORNO_RESPALDO = {type:'Feature',properties:{name:'Colombia (aproximado)'},geometry:{type:'Polygon',coordinates:[[
+ [-77.9,7.2],[-77.35,8.6],[-76.8,8.2],[-76,9.5],[-75.5,10.6],[-74.2,11.2],[-73.3,11.2],[-71.3,12.45],[-71.1,11.8],[-72.3,11.1],[-72.9,9.3],[-72.4,8.5],[-72.4,7.4],[-71.2,6.9],[-70.1,6.95],[-69.4,6.1],[-67.5,6.2],[-67.8,5.2],[-67.4,3.5],[-67,2],[-66.9,1.2],[-69.8,1.1],[-69.2,-1.4],[-69.4,-4.25],[-70,-4.2],[-70.7,-2.5],[-72.7,-2.4],[-73.9,-1.4],[-75.3,-.2],[-76.4,.3],[-77.4,.8],[-78.9,1.5],[-78.2,2.6],[-77.4,3.6],[-77.3,4.7],[-77.5,5.7],[-77.9,7.2]
+]]}};
+const COUNTRY_BOUNDS = [[-4.5,-82],[13.65,-66.7]];
+const norm = s => String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+const questionKey = s => norm(s).replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+const clean = s => {const v=String(s??'').trim();return !v || /^[\p{P}\p{Z}\s]+$/u.test(v) || /^(n\/?a|no responde(?:\s*\/\s*n\/?a)?|sin comentarios)$/i.test(v) ? '' : v;};
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cityKeys = Object.keys(CIUDADES).sort((a,b)=>b.length-a.length);
+function locate(text){const v=norm(text);return cityKeys.find(k=>new RegExp('(^|[^a-z0-9])'+k+'(?=$|[^a-z0-9])').test(v)) || null;}
+function cityName(key){return key ? NOMBRES[key] || key.replace(/\b\w/g,c=>c.toUpperCase()) : 'Sin origen registrado';}
+function haversine(a,b){const rad=d=>d*Math.PI/180, dlat=rad(b[0]-a[0]),dlon=rad(b[1]-a[1]);const q=Math.sin(dlat/2)**2+Math.cos(rad(a[0]))*Math.cos(rad(b[0]))*Math.sin(dlon/2)**2;return 6371*2*Math.atan2(Math.sqrt(q),Math.sqrt(Math.max(0,1-q)));}
+/* Parser propio, con CRLF, BOM, comillas dobles escapadas y saltos de línea en celdas.
+   Tras leer la cabecera descarta caracteres de todas las columnas no autorizadas. */
+function parseCSV(text,{columnsOnly=false}={}){
+ text=String(text).replace(/^\uFEFF/,'');let header=true,selected=new Map(),row={},field='',col=0,quoted=false,closed=false,atStart=true,rows=[];
+ const keep=()=>header||selected.has(col);
+ const append=c=>{if(keep())field+=c;};
+ const finishField=()=>{if(header){const key=questionKey(field);for(const [name,aliases] of Object.entries(PREGUNTAS)){if(aliases.some(a=>key===a||key.startsWith(a+' '))&&!Array.from(selected.values()).includes(name)){selected.set(col,name);break;}}}else if(selected.has(col))row[selected.get(col)]=clean(field);field='';col++;atStart=true;closed=false;};
+ const finishRow=()=>{finishField();if(header){if(!Array.from(selected.values()).includes('consentimiento')||!Array.from(selected.values()).includes('actual')||!Array.from(selected.values()).includes('origen'))throw Error('Faltan preguntas necesarias en el CSV.');header=false;}else if(Object.values(row).some(Boolean))rows.push(row);row={};col=0;};
+ for(let i=0;i<text.length;i++){const c=text[i];if(quoted){if(c==='"'){if(text[i+1]==='"'){append('"');i++;}else{quoted=false;closed=true;}}else append(c);continue;}if(c==='"'&&atStart){quoted=true;atStart=false;}else if(c===','){finishField();}else if(c==='\n'||c==='\r'){finishRow();if(c==='\r'&&text[i+1]==='\n')i++;}else{if(closed&&!/\s/.test(c))throw Error('CSV inválido después de comillas.');if(!closed)append(c);atStart=false;}}
+ if(quoted)throw Error('CSV con comillas sin cerrar.');if(col||field||closed)finishRow();if(header)throw Error('CSV vacío.');return columnsOnly?selected:rows;
+}
+function recordsFromCSV(csv){const rows=parseCSV(csv).filter(r=>norm(r.consentimiento)==='si, acepto');const occurrences=new Map();return rows.map((raw,index)=>{
+ const r={...raw};const adjustment=AJUSTES[r.marca];if(adjustment)for(const key of ['origen','actual'])if(Object.hasOwn(adjustment,key))r[key]=clean(adjustment[key]);
+ const origin=locate(r.origen),current=locate(r.actual),km=origin&&current?haversine(CIUDADES[origin],CIUDADES[current]):null;
+ const base=r.marca||JSON.stringify(r);const count=(occurrences.get(base)||0)+1;occurrences.set(base,count);
+ return {...r,id:base+'#'+count,n:index+1,origin,current,km};
+ });}
+const fmtKm = n => new Intl.NumberFormat('es-CO',{maximumFractionDigits:0}).format(n);
+let records=[],signature='',activeId=null,map=null,tileLayer=null,pins=null,routeLayer=null,boundaryLayer=null,flightEnd=null,flightTimer=null,flightToken=0,busy=false,sourceMode='backup',inOverview=true,overviewMode='country',readerPlace=null;
+const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+const systemTheme=window.matchMedia('(prefers-color-scheme: light)');
+const isLight=()=>document.documentElement.dataset.theme==='light';
+const routeColor=()=>isLight()?'#91602F':'#D4A373';
+function tileSource(){return CARTO_API_KEY?'https://basemaps.cartocdn.com/rastertiles/'+(isLight()?'light_all':'dark_all')+'/{z}/{x}/{y}{r}.png?key='+encodeURIComponent(CARTO_API_KEY):'https://tile.openstreetmap.org/{z}/{x}/{y}.png';}
+function applyTheme(theme,persist=false){
+ document.documentElement.dataset.theme=theme;
+ document.querySelector('meta[name="theme-color"]').content=theme==='light'?'#F6F2EA':'#0F141D';
+ document.querySelectorAll('[data-theme-choice]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.themeChoice===theme)));
+ if(persist)try{localStorage.setItem('care-map-theme',theme);}catch(_){}
+ if(tileLayer&&CARTO_API_KEY)tileLayer.setUrl(tileSource());
+ if(boundaryLayer)boundaryLayer.setStyle({color:routeColor(),fillOpacity:isLight()?.12:.23});
+ if(routeLayer)routeLayer.eachLayer(layer=>layer.setStyle({color:routeColor()}));
+ const base=document.getElementById('basemap-state');if(base)base.textContent=!WEB_ORIGIN?'Mapa simplificado: abre INICIAR-MAPA.bat o usa un servidor local.':CARTO_API_KEY?'Base: CARTO '+(isLight()?'Positron':'Dark Matter')+' / OpenStreetMap.':'Base: OpenStreetMap · tema '+(isLight()?'claro':'oscuro')+' sin clave.';
+}
+function scrollToSection(id){document.getElementById(id).scrollIntoView({behavior:reduceMotion.matches?'instant':'smooth',block:'start'});}
+
+const statusEl=document.getElementById('flight-status');
+function sourceStatus(text){document.getElementById('source-state').textContent=text;}
+function groupFor(r){if(r.current&&r.current!==DESTINO_PRINCIPAL)return 'other';if(!r.origin||!r.current||r.origin===r.current)return 'stay';return 'origin';}
+function renderPanel(){
+ const groups=[['origin','Lugares de origen'],['stay','Sin viaje registrado'],['other','Otros destinos']];
+ document.getElementById('people').innerHTML=groups.map(([key,title])=>{const rows=records.filter(r=>groupFor(r)===key);return `<section class="group"><h2 class="group-title">${title}<span>${String(rows.length).padStart(2,'0')}</span></h2>${rows.map(r=>{
+ const place=key==='other'?cityName(r.current):r.origin?cityName(r.origin):r.current?cityName(r.current):'Lugar sin ubicar';
+ const detail=r.origin===r.current&&r.origin?'Sin cambio de ciudad':!r.origin?'Origen sin ubicar':!r.current?'Destino sin ubicar':'Vive en '+cityName(r.current);
+ return `<button class="person" data-id="${esc(r.id)}" aria-pressed="${activeId===r.id}" aria-label="Usuario ${r.n}: ${esc(place)}, ${esc(detail)}"><span class="person-number">${String(r.n).padStart(2,'0')}</span><span><span class="person-name">${esc(place)}</span><span class="person-meta">Usuario ${r.n} · ${esc(detail)}</span></span><span class="distance">${r.km===null?'—':fmtKm(r.km)+' km'}<small>${r.km===null?'sin ruta':'línea recta'}</small></span></button>`;
+ }).join('')||'<p class="empty-group">Sin respuestas en esta sección.</p>'}</section>`;}).join('');
+ document.getElementById('mobile-count').textContent=records.length;document.getElementById('total').textContent=records.length;document.getElementById('palmira-total').textContent=records.filter(r=>r.current===DESTINO_PRINCIPAL).length;
+ const places=new Set(records.flatMap(r=>[r.origin,r.current]).filter(Boolean));document.getElementById('place-total').textContent=String(places.size).padStart(2,'0');
+ const unknown=records.filter(r=>!r.origin||!r.current);document.getElementById('unlocated').hidden=!unknown.length;document.getElementById('unlocated-summary').textContent=`Sin ubicar · ${unknown.length} ${unknown.length===1?'respuesta':'respuestas'}`;
+ document.getElementById('unlocated-list').innerHTML=unknown.map(r=>`<li>Usuario ${r.n}: ${!r.origin?'origen '+esc(r.origen||'no registrado'):''}${!r.origin&&!r.current?'; ':''}${!r.current?'ciudad actual '+esc(r.actual||'no registrada'):''}.</li>`).join('');
+}
+function storyHTML(r,place){
+ const peers=place?records.filter(p=>p.origin===place||p.current===place):[r];
+ const val=(v,empty='No responde / N/A')=>clean(v)?esc(v):`<span class="empty-value">${empty}</span>`;
+ const tags=v=>clean(v)?`<div class="tags">${v.split(/[,;\n]+/).map(clean).filter(Boolean).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:val('');
+ const field=(label,content)=>`<section class="story-field"><h3>${label}</h3>${content}</section>`;
+ const origin=r.origin?cityName(r.origin):r.origen||'origen no registrado';const current=r.current?cityName(r.current):r.actual||'ciudad no registrada';
+ const distance=r.km===null?'Distancia no disponible':r.km===0?'0 km · Sin cambio de ciudad':fmtKm(r.km)+' km · en línea recta';
+ return `<article class="story"><p class="kicker">Voces del territorio</p><h2 id="story-title" tabindex="-1">${esc(place?cityName(place):'Una historia por ubicar')}</h2><p class="story-meta">Usuario ${r.n} · ${esc(origin)} · vive hoy en ${esc(current)}</p><span class="distance-tag">${distance}</span><div class="route-summary">${esc(origin)} ${r.origin&&r.current&&r.origin===r.current?'·':'→'} ${esc(current)}<small>${r.km===null?'Sin datos suficientes para trazar una ruta':r.km===0?'Origen y ciudad actual coinciden':'Vínculo entre origen y ciudad actual; no es un recorrido vial.'}</small></div>${peers.length>1?`<div class="tabs" role="tablist" aria-label="Personas vinculadas a ${esc(cityName(place))}">${peers.map(p=>`<button role="tab" aria-selected="${p.id===r.id}" tabindex="${p.id===r.id?0:-1}" id="person-tab-${p.n}" data-tab="${esc(p.id)}" data-place="${esc(place)}" aria-controls="response-panel">Usuario ${p.n}</button>`).join('')}</div>`:''}<div id="response-panel" ${peers.length>1?`role="tabpanel" aria-labelledby="person-tab-${r.n}" tabindex="0"`:''}>
+ ${field('Por qué se fue',`<p>${val(r.motivo)}</p>`)}${field('Tamaño del empaque · 17 × 28 cm',`<p>${val(r.empaque)}</p>`)}${field('Una segunda vida para el empaque',`<p>${val(r.segundo)}</p>`)}${field('Cuándo siente la nostalgia',`<p>${val(r.nostalgia)}</p>${r.navidad?`<p class="nostalgia-detail" style="margin-top:5px">En Navidad: ${esc(r.navidad)}</p>`:''}`)}${field('Tradiciones que conserva',tags(r.tradiciones))}${field('Lo que más le llamó la atención',tags(r.elementos))}${field('Comentario',`<p class="${r.comentario?'quote':''}">${val(r.comentario,'Sin comentarios')}</p>`)}
+ <p class="original">Origen declarado: ${val(r.origen)}<br>Ciudad actual declarada: ${val(r.actual)}</p></div></article>`;
+}
+function popupFor(r,place,focus=true){
+ readerPlace=place;const reader=document.getElementById('story-dialog');
+ document.getElementById('reader-content').innerHTML=storyHTML(r,place);
+ const index=records.findIndex(p=>p.id===r.id);
+ document.getElementById('reader-progress').textContent=`Historia ${index+1} de ${records.length}`;
+ document.getElementById('story-prev').disabled=index<=0;document.getElementById('story-next').disabled=index>=records.length-1;
+ reader.hidden=false;document.getElementById('map-shell').classList.add('reader-open');document.getElementById('reader-scroll').scrollTop=0;
+ if(focus)document.getElementById('story-title').focus({preventScroll:true});
+}
+function highlightPins(r){if(!pins)return;pins.eachLayer(marker=>{const selected=Boolean(r&&(marker.options.cityKey===r.origin||marker.options.cityKey===r.current));marker.getElement()?.classList.toggle('pin-selected',selected);marker.getElement()?.classList.toggle('pin-muted',Boolean(r&&!selected));});}
+function readerPadding(){const size=map.getSize();const compact=innerWidth<=1100;return {paddingTopLeft:[25,90],paddingBottomRight:compact?[25,Math.min(size.y-160,innerHeight*(innerHeight<=500?.76:.54)+20)]:[Math.min(470,size.x-180),35]};}
+function frameRecord(r,place,points,animate){const padding=readerPadding(),longRoute=r.km!==null&&r.km>300&&points.length;
+ if(longRoute){const options={...padding,maxZoom:9,duration:2.6,animate};if(animate)map.flyToBounds(L.latLngBounds(points),options);else map.fitBounds(L.latLngBounds(points),options);}
+ else{const size=map.getSize(),left=padding.paddingTopLeft,right=padding.paddingBottomRight;
+ const offset=L.point((right[0]-left[0])/2,(right[1]-left[1])/2);const center=map.unproject(map.project(CIUDADES[place],9).add(offset),9);
+ if(animate)map.flyTo(center,9,{duration:2.6});else map.setView(center,9,{animate:false});}
+}
+function navigateStory(delta){const index=records.findIndex(r=>r.id===activeId),next=records[index+delta];if(next)selectPerson(next.id);}
+function curvePoints(a,b){const dx=b[1]-a[1],dy=b[0]-a[0],control=[(a[0]+b[0])/2+dx*.20,(a[1]+b[1])/2-dy*.20];return Array.from({length:65},(_,i)=>{const t=i/64,s=1-t;return [s*s*a[0]+2*s*t*control[0]+t*t*b[0],s*s*a[1]+2*s*t*control[1]+t*t*b[1]];});}
+function drawRoute(r){if(!map)return [];routeLayer.clearLayers();if(!r.origin||!r.current||r.origin===r.current)return [];const pts=curvePoints(CIUDADES[r.origin],CIUDADES[r.current]);L.polyline(pts,{color:routeColor(),weight:2,opacity:.92,dashArray:'3 8',lineCap:'round',interactive:false}).addTo(routeLayer);return pts;}
+function cancelFlight(){flightToken++;clearTimeout(flightTimer);if(map){if(flightEnd)map.off('moveend',flightEnd);map.stop();}flightEnd=null;statusEl.textContent='';}
+function selectPerson(id,placeOverride=null,fly=true){
+ const r=records.find(p=>p.id===id);if(!r)return;cancelFlight();const token=flightToken;activeId=id;inOverview=false;
+ document.querySelectorAll('.person').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.id===id)));document.getElementById('story-dialog').hidden=true;document.getElementById('map-shell').classList.add('reader-open');highlightPins(r);
+ document.querySelectorAll('.map-views button').forEach(b=>b.setAttribute('aria-pressed','false'));
+ const place=placeOverride||(groupFor(r)==='other'?r.current:r.origin||r.current);const pts=drawRoute(r);
+ if(!map||!place){popupFor(r,place);return;}
+ map.closePopup();if(!fly){popupFor(r,place);return;}
+ if(window.innerWidth<=760)document.getElementById('map-shell').scrollIntoView({behavior:reduceMotion.matches?'instant':'smooth',block:'start'});
+ statusEl.textContent=`Viajando a ${cityName(place)} · Usuario ${r.n}`;
+ let finished=false;flightEnd=()=>{if(finished||token!==flightToken)return;finished=true;clearTimeout(flightTimer);map.off('moveend',flightEnd);flightEnd=null;statusEl.textContent='';popupFor(r,place);};
+ if(reduceMotion.matches){frameRecord(r,place,pts,false);flightEnd();return;}
+ map.once('moveend',flightEnd);frameRecord(r,place,pts,true);
+ // Handles selecting an already centered point (Leaflet may emit no move event).
+ flightTimer=setTimeout(()=>{if(flightEnd&&token===flightToken)flightEnd();},2900);
+}
+function showOverview(animate=true,mode=overviewMode){cancelFlight();activeId=null;readerPlace=null;inOverview=true;overviewMode=mode;
+ document.getElementById('story-dialog').hidden=true;document.getElementById('story-dialog').classList.remove('expanded');syncExpand();document.getElementById('map-shell').classList.remove('reader-open');highlightPins(null);
+ document.querySelectorAll('.person').forEach(b=>b.setAttribute('aria-pressed','false'));document.getElementById('view-country').setAttribute('aria-pressed',String(mode==='country'));document.getElementById('view-survey').setAttribute('aria-pressed',String(mode==='survey'));
+ if(!map)return;map.closePopup();routeLayer.clearLayers();const coordinates=records.flatMap(r=>[r.origin,r.current]).filter(Boolean).map(key=>CIUDADES[key]);
+ const b=mode==='country'?L.latLngBounds(COUNTRY_BOUNDS):L.latLngBounds(coordinates.length?coordinates:[CIUDADES[DESTINO_PRINCIPAL]]);if(mode==='country')coordinates.forEach(point=>b.extend(point));
+ const options={paddingTopLeft:[35,205],paddingBottomRight:[35,75],maxZoom:9,duration:2.6};if(animate&&!reduceMotion.matches)map.flyToBounds(b,options);else map.fitBounds(b,{...options,animate:false});
+}
+function renderPins(){if(!map)return;pins.clearLayers();const places=new Set([DESTINO_PRINCIPAL,...records.flatMap(r=>[r.origin,r.current]).filter(Boolean)]);for(const place of places){const residents=records.filter(r=>r.current===place),origins=records.filter(r=>r.origin===place);const destination=place===DESTINO_PRINCIPAL||residents.length>0;
+ const marker=L.marker(CIUDADES[place],{cityKey:place,icon:L.divIcon({className:'map-pin '+(destination?'destination ':'')+(place===DESTINO_PRINCIPAL?'principal':''),html:'<span class="pin-core"></span>',iconSize:[28,32],iconAnchor:[14,23]}),title:cityName(place),alt:cityName(place),zIndexOffset:destination?500:0}).addTo(pins);
+ marker.bindTooltip(esc(cityName(place)),{permanent:true,direction:place==='cali'?'left':'right',offset:place==='cali'?[-11,-7]:[11,-7],className:'city-label '+(destination?'destination-label':'origin-label')});
+ marker.on('click',()=>{const r=origins[0]||residents[0];if(r)selectPerson(r.id,place);});
+ }}
+function applyCSV(csv){const next=recordsFromCSV(csv),sig=JSON.stringify(next);if(signature===sig)return false;const prior=activeId;cancelFlight();records=next;signature=sig;activeId=next.some(r=>r.id===prior)?prior:null;renderPanel();renderPins();if(activeId){const r=records.find(p=>p.id===activeId);drawRoute(r);highlightPins(r);popupFor(r,readerPlace||r.origin||r.current,false);}else{document.getElementById('story-dialog').hidden=true;if(map)showOverview(false);}return true;}
+async function timedFetch(url){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);try{const response=await fetch(url,{signal:controller.signal,cache:'no-store',credentials:'omit',referrerPolicy:'no-referrer'});if(!response.ok)throw Error('HTTP '+response.status);return await response.text();}finally{clearTimeout(timer);}}
+function sheetQueryURL(query){const url=new URL('https://docs.google.com/spreadsheets/d/'+encodeURIComponent(SHEET_ID)+'/gviz/tq');url.search=new URLSearchParams({tqx:'out:csv',headers:'1',sheet:SHEET_NAME,tq:query}).toString();return url.href;}
+function columnLetter(index){let letters='';for(let n=index+1;n>0;n=Math.floor((n-1)/26))letters=String.fromCharCode(65+(n-1)%26)+letters;return letters;}
+async function liveCSV(){
+ if(CSV_URL){const url=new URL(CSV_URL);if(url.protocol!=='https:')throw Error('La hoja requiere HTTPS.');return timedFetch(url.href);}
+ // LIMIT 0 solo devuelve los títulos. Nunca se solicitan valores de contacto.
+ const headers=await timedFetch(sheetQueryURL('select * limit 0'));
+ const columns=parseCSV(headers,{columnsOnly:true});
+ return timedFetch(sheetQueryURL('select '+Array.from(columns.keys(),columnLetter).join(',')));
+}
+let lastLiveAt='';
+async function refresh(){if((!CSV_URL&&!SHEET_ID)||busy)return;busy=true;try{const csv=await liveCSV();applyCSV(csv);sourceMode='live';lastLiveAt=new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});sourceStatus('● Hoja en vivo · revisada '+lastLiveAt+' · cada 60 s');}catch(error){if(lastLiveAt){sourceStatus('● Sin conexión con la hoja · última lectura '+lastLiveAt+' · reintento cada 60 s');}else{sourceMode='backup';sourceStatus('● Respaldo incluido · hoja no disponible. Revisa su acceso público · reintento cada 60 s');}}finally{busy=false;}}
+function initializeMap(){if(!window.L){document.getElementById('map-error').classList.add('visible');return;}
+ map=L.map('map',{zoomControl:false,minZoom:3,maxZoom:17,zoomSnap:.25,attributionControl:true,fadeAnimation:!reduceMotion.matches,zoomAnimation:!reduceMotion.matches}).setView([4,-74],5);
+ L.control.zoom({position:'topright'}).addTo(map);L.control.scale({imperial:false,metric:true,maxWidth:120}).addTo(map);
+ const carto=Boolean(CARTO_API_KEY);
+ const tileURL=tileSource();
+ map.createPane('basemap');map.getPane('basemap').style.zIndex=200;if(!carto)map.getPane('basemap').classList.add('osm-dark');
+ const tiles=tileLayer=WEB_ORIGIN?L.tileLayer(tileURL,{pane:'basemap',referrerPolicy:'strict-origin-when-cross-origin',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'+(carto?' &copy; <a href="https://carto.com/attributions">CARTO</a>':''),maxZoom:19}).addTo(map):null;
+ document.getElementById('basemap-state').textContent=carto?'Base: CARTO Dark Matter / OpenStreetMap.':'Base: OpenStreetMap oscurecido. CARTO ahora requiere clave.';
+ let tileNotice=false;tiles?.on('tileerror',()=>{if(!tileNotice){tileNotice=true;document.getElementById('boundary-state').textContent+=' Algunos mosaicos no están disponibles; los puntos y el contorno siguen visibles.';}});
+ const style={color:routeColor(),weight:1.25,opacity:.8,fillColor:'#2D5A4C',fillOpacity:isLight()?.12:.23,interactive:false};boundaryLayer=L.geoJSON(CONTORNO_RESPALDO,{style}).addTo(map);
+ // Islas de referencia: el GeoJSON público simplificado contiene la parte continental.
+ for(const key of ['san andres','providencia'])L.circleMarker(CIUDADES[key],{radius:2,color:'#D4A373',weight:1,fillColor:'#2D5A4C',fillOpacity:.7,interactive:false}).addTo(map);
+ for(const key of ['bogota','medellin','cartagena','pasto','leticia'])L.circleMarker(CIUDADES[key],{radius:2.2,color:'#c7c4b2',weight:0,fillOpacity:.85,interactive:false}).bindTooltip(cityName(key),{permanent:true,direction:'right',offset:[4,0],className:'ref-label'}).addTo(map);
+ routeLayer=L.layerGroup().addTo(map);pins=L.layerGroup().addTo(map);map.on('zoomend',()=>document.getElementById('map').classList.toggle('country-view',map.getZoom()<7));
+ map.on('dragstart',()=>{if(flightEnd)cancelFlight();});renderPins();showOverview(false);
+ let resizeFrame;new ResizeObserver(()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{map.invalidateSize({pan:false});if(inOverview)showOverview(false);else if(activeId&&!document.getElementById('story-dialog').hidden){const r=records.find(p=>p.id===activeId),place=readerPlace||r?.origin||r?.current;if(r&&place)frameRecord(r,place,r.origin&&r.current&&r.origin!==r.current?curvePoints(CIUDADES[r.origin],CIUDADES[r.current]):[],false);}});}).observe(document.getElementById('map'));
+
+ timedFetch(GEOJSON_URL).then(text=>{const geo=JSON.parse(text);if(!['Feature','FeatureCollection','Polygon','MultiPolygon'].includes(geo.type))throw Error('GeoJSON inválido');const real=L.geoJSON(geo,{style:{...style,color:routeColor(),fillOpacity:isLight()?.12:.23}});if(!real.getBounds().isValid())throw Error('Frontera vacía');map.removeLayer(boundaryLayer);boundaryLayer=real.addTo(map);boundaryLayer.bringToBack();document.getElementById('boundary-state').textContent='Frontera continental: GeoJSON público simplificado. San Andrés y Providencia indicados como puntos.';}).catch(()=>{document.getElementById('boundary-state').textContent='Contorno aproximado de respaldo: no se pudo cargar la frontera pública.';});
+}
+document.querySelectorAll('[data-theme-choice]').forEach(button=>button.addEventListener('click',()=>applyTheme(button.dataset.themeChoice,true)));
+systemTheme.addEventListener('change',event=>{let saved;try{saved=localStorage.getItem('care-map-theme');}catch(_){}if(!['light','dark'].includes(saved))applyTheme(event.matches?'light':'dark');});
+document.getElementById('mobile-map').addEventListener('click',()=>{showOverview();scrollToSection('map-shell');});
+document.getElementById('mobile-stories').addEventListener('click',()=>{closeDialog(false);scrollToSection('people');});
+document.getElementById('people').addEventListener('click',e=>{const button=e.target.closest('[data-id]');if(button)selectPerson(button.dataset.id);});
+document.getElementById('overview').addEventListener('click',()=>{showOverview(true,'country');if(window.innerWidth<=760)document.getElementById('map-shell').scrollIntoView({behavior:reduceMotion.matches?'instant':'smooth'});});
+document.addEventListener('click',e=>{const tab=e.target.closest('[data-tab]');if(tab)selectPerson(tab.dataset.tab,tab.dataset.place,false);if(e.target.closest('[data-close-dialog]'))closeDialog();});
+function closeDialog(restoreFocus=true){const open=!document.getElementById('story-dialog').hidden||Boolean(flightEnd);cancelFlight();document.getElementById('story-dialog').hidden=true;document.getElementById('story-dialog').classList.remove('expanded');syncExpand();document.getElementById('map-shell').classList.remove('reader-open');if(restoreFocus&&open){const button=Array.from(document.querySelectorAll('.person')).find(b=>b.dataset.id===activeId);button?.focus();}}
+function syncExpand(){const expanded=document.getElementById('story-dialog').classList.contains('expanded');const button=document.getElementById('reader-expand');button.setAttribute('aria-expanded',String(expanded));button.textContent=expanded?'Reducir lectura ↓':'Ampliar lectura ↑';}
+document.getElementById('reader-expand').addEventListener('click',()=>{document.getElementById('story-dialog').classList.toggle('expanded');syncExpand();});
+document.getElementById('story-prev').addEventListener('click',()=>navigateStory(-1));document.getElementById('story-next').addEventListener('click',()=>navigateStory(1));
+document.getElementById('view-country').addEventListener('click',()=>showOverview(true,'country'));document.getElementById('view-survey').addEventListener('click',()=>showOverview(true,'survey'));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDialog();const tab=e.target.closest('[role=tab]');if(tab&&['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const tabs=Array.from(tab.parentNode.children),i=tabs.indexOf(tab),index=e.key==='Home'?0:e.key==='End'?tabs.length-1:(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;const target=tabs[index];selectPerson(target.dataset.tab,target.dataset.place,false);Array.from(document.querySelectorAll('[data-tab]')).find(t=>t.dataset.tab===target.dataset.tab)?.focus();}});
+document.getElementById('local-file-notice').hidden=WEB_ORIGIN;
+applyCSV(RESPALDO_CSV);sourceStatus('● Respaldo incluido · CSV recibido · 12 oct 2026');initializeMap();applyTheme(document.documentElement.dataset.theme);if(CSV_URL||SHEET_ID){refresh();setInterval(refresh,REFRESH_MS);}
+</script>
+</body>
+</html>
